@@ -1,7 +1,9 @@
-I basically typed out the whole entire [page on MongoDB](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/mongoose) in the Mozilla Express tutorial.
+# Mongo Db Primer
 
-I realized halfway through that this needed to be an MD file.  So it needs a second pass to convert it into that.
+The whole entire [page on MongoDB](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/mongoose) in the Mozilla Express tutorial.  Which I typed out in order to read carefully.
 
+### Getting Started
+```
 // Import the mongoose module
 var mongoose = require('mongoose')
 
@@ -14,17 +16,21 @@ var db = mongoose.connection
 
 // Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error!'))
+```
+_How to close this connection?_
 
-// how to close this connection?
-
+### Models and schema
+```
 // Define a schema
 var Schema = mongoose.Schema
 var SomeModelSchema = new Schema({
   a_string: String,
   a_data: Date
 })
+```
 
-// Models are created from schemas using the mongoose.model() method
+Models are created from schemas using the mongoose.model() method:
+```
 var someModel = mongoose.model('SomeModel', SomeModelSchema)
 // first arg is the name of the collection, second arg is the schema to use
 
@@ -42,28 +48,23 @@ var schema = new Schema(
     ofString: [String], // You can also have an array of each of the other types too.
     nested: { stuff: { type: String, lowercase: true, trim: true } }
   })
+```
+Options in declaring a field (see "updated," above) include things like default validators, whether the field is required, whether string fields should be set to uc/lc, etc.
 
-// options in declaring a field (see "updated," above) include things like
-// default validators, whether the field is required, whether string fields should be set to uc/lc, etc.
+### Validators
+Mongoose provides built-in and custom validators, and synchronous and asynchronous validators. It allows you to specify both the acceptable range or value and the error message for validation failure in all cases.
 
-// Mongoose provides built-in and custom validators, and synchronous and asynchronous validators.
-// It allows you to specify both the acceptable range or value and the error message for validation
-// failure in all cases.
+The built-in validators include:
 
-/*
-  The built-in validators include:
-    *  All schema types have "required".  This is used to specify whether the field must be
-        supplied in order to save a document.
+ - All schema types have "required".  This is used to specify whether the field must be supplied in order to save a document.
+ - Numbers have min and max validators
+- Strings have:
+       	- enum: 	set of values allowed for the field
+       	- match: 	specifies a regular expression that the string must match
+       	- maxlength and minlength for the string
 
-    *	Numbers have min and max validators
-
-    *  	Strings have:
-    	* enum: 	set of values allowed for the field
-    	* match: 	specifies a regular expression that the string must match
-    	* maxlength and minlength for the string
-*/
-
-// Example validator types and error messages:
+Example validator types and error messages:
+```
 var breakfastSchema = new Schema({
   eggs: {
     type: Number,
@@ -76,20 +77,16 @@ var breakfastSchema = new Schema({
     enum: ['Coffee', 'Tea', 'Water', 'Seltzer', 'OJ']
   }
 })
+```
+## Virtual Properties
+Virtual properties are document properties that you can get and set but that do not get persisted to MongoDB.  Getters are useful for formatting or combining fields, while setters are useful for decomposing a single value into multiple values for storage
 
-// Virtual Properties
-//	Virtual properties are document properties that you can get and set but that do not
-// get persisted to MongoDB.  Getters are useful for formatting or combining fields,
-// while setters are useful for de-composing a single value into multiple values for storage
+### Methods and Query Helpers
+A schema can also have instance methods, status methods, and query helpers.  The instance and static methods are similar but with the obvious difference that an instance method is associated with a particular record and has access to the current object.  Query helpers help you to extend Mongoose's chainable query builder API...
 
-// METHODS and QUERY HELPERS
-/* A schema can also have instance methods, status methods, and query helpers.  The
-	Instance and static methods are similar but with the obvious difference that an instance method
-	is associate with a particular record and ahs access to the current object.  Query helpers
-	help you to extend Mongoose's chainable query builder API...
-*/
 
-// Creating and modifying documents
+### Creating and modifying documents
+```
 // Create an instance of model SomeModel
 var awesome_instance = new SomeModel({ name: 'awesome' })
 
@@ -98,25 +95,26 @@ awesome_instance.save(function (err) {
   if (err) return handleError(err)
   // saved!
 })
+```
 
-// CRUD are asychronous operations -- you supply a callback that is called when the operation completes
-// The API uses the error-first argument convention, so the first argument is always an error value
-// or null.  If the API returns some result, this will be provided as the second argument.
+CRUD are asynchronous operations -- you supply a callback that is called when the operation completes. The API uses the error-first argument convention, so the first argument is always an error value or null.  If the API returns some result, this will be provided as the second argument.
 
-// You can also use create() to define the the model instance at the same time you
-// save it.  The callback will return an error for the first argument and the newly-
-// created model instance for the second.
+You can also use create() to define the the model instance at the same time you save it.  The callback will return an error for the first argument and the newly created model instance for the second.
+
+```
 SomeModel.create({ name: 'also_awesome' }, function (err, awesome_instance) {
   if (err) return handleError(err)
 })
+```
 
-// Every model has an associated connection.  You create a new connection and call .model()
-// on it to create the documents on a different database.
+Every model has an associated connection.  You create a new connection and call .model() on it to create the documents on a different database.
 
-// You can acess the fields in this new record using the dot syntax, and change the values.
-// You have to call save() or update() to store modified values back to the DB
+You can access the fields in this new record using the dot syntax, and change the values.
 
-// Access model field values using dot notation
+You have to call `save()` or `update()` to store modified values back to the DB.
+
+### Access model field values using dot notation
+```
 console.log(awesome_instance.name) // should log('also_awesome')
 
 // Change record by modifying the fields, and then calling save()
@@ -124,29 +122,23 @@ awesome_instance.name = 'Even more awesome instance!'
 awesome_instance.save(function (err) {
   if (err) return handleError(err) // saved!
 })
+```
 
-// SEARCHING FOR RECORDS
-/*	You can search for records using query methods, specifying the query conditions as a JSON document.
-	This code fragmane shows how you might find all athletes in a database who play tennis,
-	returning just the fields for athlete name and age.  Here we just specifiy one matching field
-	(sport) but more criteria can be added, regular expression criteria specified, or conditions
-	removed all together to return all records
-*/
+### Searching for Records
+You can search for records using query methods, specifying the query conditions as a JSON document.  This code fragment shows how you might find all athletes in a database who play tennis, returning just the fields for athlete name and age.  Here we just specify one matching field (sport) but more criteria can be added, regular expression criteria specified, or conditions removed all together to return all records.
 
+```
 var Athlete = mongoose.model('Athlete', yourSchema)
 
 // find all athletes who play tennis, selecting the 'name' and 'age' fields
 Athlete.find({ 'sport': 'Tennis' }, 'name age', function (err, athletes) {
   if (err) return handleError(err)
-  // 'athletes' containes the list of athletes who match the criteri'
+  // 'athletes' containes the list of athletes who match the criteria'
 })
+```
+If you specify a callback, the query will execute immediately.  The callback will be invoked when the search completes.  If you don't specify a callback then the API will return a variable of type Query.  You can use this object to build up a query and then execute it (with a callback) rather then using the exec() method.
 
-/* 	If you specify a callback, the query will execute immediately.  The callback will be
-	Invoked when the search completes.  If you don't specify a callback then the API will return
-	a variable of type Query.  You can use this object to build up a query and then execute it
-	(with a callback) rather then using the exec() method.
-*/
-
+```
 // find all athletes who play tennis
 var query = Athlete.find( { 'sport': 'Tennis' })
 
@@ -164,10 +156,11 @@ query.exec(function (err, athletes) {
 	if (err) return handleError(err)
 	// athletes contains an ordered list of 5 athletes who play tennis
 })
+```
 
-This can also be done using a where() function, and we can chain all the parts of our query together using the dot operator rather than adding them separately.  This snippet is the same as the one above, with an additional condition for age.
+This can also be done using a `where()` function, and we can chain all the parts of our query together using the dot operator rather than adding them separately.  This snippet is the same as the one above, with an additional condition for age.
 
-Athlete
+```Athlete
 	.find()
 	.where('sport').equals('Tennis')
 	.where('age').gt(17).lt(50)
@@ -175,21 +168,23 @@ Athlete
 	.sort( {age: -1} )
 	.select('name age')
 	.exec(callback) // where "callback" is the name of the callback function
+```
+In addition to `find()`:
 
-In addition to find():
-	findByID()
-	findOne()
-	findByIdAndRemove()
-	findByIdAndUpdate()
-	findOneAndRemove()
-	findOneAndUpdate()
+ - `findByID() `	
+ - `findOne() `	
+ - `findByIdAndRemove()`
+ - `findByIdAndUpdate()`
+ - `findOneAndRemove()`	
+  -	`findOneAndUpdate()`
 
-Also count() which gives the number of items that match conditions without actually fetching the records.
+Also `count()` which gives the number of items that match conditions without actually fetching the records.
 
-Working with related documentions -- a/k/a population
+### Working with related documents -- a/k/a population
 
-The following schema defines authors and stories. Each author can have multipe stories, which are represented as an array of ObjectId.  Each story can have a single author.  The "ref" tells the schema which model can be assigned to this field.
+The following schema defines authors and stories. Each author can have multiple stories, which are represented as an array of ObjectId.  Each story can have a single author.  The "ref" tells the schema which model can be assigned to this field.
 
+```
 var mongoose = require('mongoose')
 	, Schema = mongoose.Schema
 
@@ -205,9 +200,11 @@ var storySchema = Schema({
 
 var Story = mongoose.model('Story', storySchema)
 var Author = mongoose.model('Author', authorSchema)
+```
 
 We can save our references to the related document by assigning the _id value.  This code creates an author, then a story, then assigns the author id to the story's author field.
 
+```
 var bob = new Author({ name: 'Bob Smith' })
 
 bob.save(function (err) {
@@ -224,20 +221,23 @@ bob.save(function (err) {
 		// Bob now has his story
 		})
 })
+```
+The story document now has an author referenced by the authors document's id.  In order to get the author information in the story results we use `populate()`
 
-The story document now has an author referenced by the authors document's id.  In order to get the author information in the story results we use populate()
-
+```
 Story
 	.findOne({ title: 'Bob goes sledding' })
 	.populate('author') //This populates the author id with actual author information
 	.exec(function (err, story) {
 		if (err) return handleError(err)
 		console.log('The author is %s', story.author.name)
+```
 
-Ok, so we added an author to a story, but we didnt add the story to the author's story array.  So how to get all stories by a particular author?
+Ok, so we added an author to a story, but we didn't add the story to the author's story array.  So how to get all stories by a particular author?
 
-Get the _id_ of the author, then use find() to search for this in the author field across all stories.
+Get the `_id` of the author, then use `find()` to search for this in the author field across all stories.
 
+```
 Story
 	.find({ author: bob._id })
 	.exec(function (err, stories)) {
@@ -245,11 +245,12 @@ Story
 		// returns all stories that have bob's id as their author
 		}
 	})
+```
 
-One last thing: One schema/model per file!  It doesn't have to be this way but is highly 
-recommended.
+One last thing: _One schema/model per file!_  It doesn't have to be this way but is highly recommended.
 
-// File: .models/somemodel/js
+```
+// File: /models/somemodel/js
 
 var mongoose = require('mongoose')
 
@@ -263,11 +264,13 @@ var SomeModelSchema = new Schema({
 
 // Export function to create "SomeModel" model class
 module.exports = mongoose.model('SomeModel', SomeModelSchema)
+```
+You can then require and use the model immediately in other files.  Here's how you might use it to get all instances of the model:
 
-You can then require and use the model immediate in other files.  Here's how you might use it to get all instance of the model.
-
+```
 // Create a SomeModel model just by requiring the module
 var SomeModel = require('../models/somemodel')
 
 // Use the SomeModel object (model) to find all SomeModel records
 SomeModel.find(callback_function)
+```
