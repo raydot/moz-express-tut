@@ -4,11 +4,24 @@ var path = require('path')
 var cookieParser = require('cookie-parser')
 var logger = require('morgan')
 
+// To read .env...
+const dotenv = require('dotenv')
+dotenv.config()
+
 // get the routes
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
 
 var app = express() // create the app object
+
+// Set up mongoose connection
+var mongoose = require('mongoose')
+// var mongoDBCreds = process.env.DB_CREDS
+// console.log('credz: ', process.env.DB_CREDS)
+var mongoDB = process.env.DB_CREDS
+mongoose.connect(mongoDB, { useNewUrlParser: true })
+var db = mongoose.connection
+db.on('error', console.error.bind(console, 'Whoa!  MongoDB connection error:'))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views')) // where the templates will be stored
