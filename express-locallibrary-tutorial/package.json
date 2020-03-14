@@ -8,7 +8,7 @@
     "debug": "DEBUG=express-locallibrary-tutorial:* & nodemon start"
   },
   "dependencies": {
-    "acorn": "^6.0.0",
+    "acorn": "^6.4.1",
     "async": "^3.0.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
