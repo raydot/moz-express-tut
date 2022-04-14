@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "acorn": "^6.0.0",
-    "async": "^3.0.0",
+    "async": "^3.2.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^8.0.0",
